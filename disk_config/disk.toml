@@ -1,0 +1,14 @@
+[[customizations.filesystem]]
+mountpoint = "/"
+minsize = "20 GiB"
+
+# Optional local fallback account, baked directly into the disk image.
+# Useful for the very first login on bare metal before you've wired up any
+# cloud-init seed - cloud-init (NoCloud/ConfigDrive) is still the intended
+# way to provision users/keys/network per-machine, this is just a safety net.
+# Uncomment and set your own SSH key (password login stays disabled either way):
+#
+# [[customizations.user]]
+# name = "admin"
+# groups = ["wheel"]
+# key = "ssh-ed25519 AAAA...your-key... you@example"
