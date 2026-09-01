@@ -13,11 +13,23 @@ cp -avf "/ctx/system_files"/. /
 #                        they're disabled in 99-bootc-modules.cfg rather than failing noisily every boot)
 # cifs-utils           - mount SMB/CIFS shares
 # nfs-utils            - mount NFS shares
+# wget1-wget           - Fedora split classic wget into wget1/wget2; this is the shim package that
+#                        actually provides the /usr/bin/wget binary
+# python3.12           - pinned version alongside the image default (3.14), for tooling that needs it
 dnf5 install -y \
     cloud-init \
     cloud-utils-growpart \
     cifs-utils \
-    nfs-utils
+    nfs-utils \
+    wget1-wget \
+    python3.12
+
+# python3.12 has no python3.12-pip package; ensurepip provides it, but it installs into
+# /usr/local (-> /var/usrlocal on this ostree/bootc layout), which only gets created by
+# tmpfiles.d at boot - doesn't exist yet during the image build, so ensurepip fails with
+# "No such file or directory: '/usr/local/lib'" unless we create it ourselves first.
+mkdir -p /var/usrlocal/{bin,etc,games,include,lib,lib64,libexec,sbin,share,src}
+python3.12 -m ensurepip --upgrade
 
 ### Docker
 # uCore already ships moby-engine (real docker, not just podman) plus the
