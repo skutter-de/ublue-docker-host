@@ -8,6 +8,11 @@
 # (the actual ostree deployment mount) rather than the composefs overlay at
 # "/". Safe to run on every boot: growpart/xfs_growfs are no-ops once the
 # partition/filesystem already fill the disk.
+#
+# xfs_growfs targets /var, not /: on this bootc/ostree layout "/" is the
+# composefs overlay (not a real XFS mount - `xfs_growfs /` fails outright),
+# while the actual XFS filesystem on the root partition is mounted at /var
+# (confirmed via `findmnt /var` pointing at the same device as /sysroot).
 set -euo pipefail
 
 root_dev=$(findmnt -no SOURCE /sysroot)
@@ -20,4 +25,4 @@ if [ -z "$partnum" ]; then
 fi
 
 growpart "$disk" "$partnum" || true
-xfs_growfs /
+xfs_growfs /var

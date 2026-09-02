@@ -1,0 +1,5 @@
+# uCore/Fedora's 99-default-disable.preset ends with a catch-all "disable *", which
+# wins over a plain `systemctl enable` done at image-build time (ostree re-applies
+# presets on first boot / every deployment). Sorted before 99- so this rule matches
+# first for growroot.service.
+enable growroot.service
