@@ -55,14 +55,16 @@ repo (see `build_files/build.sh` and the cloud-init drop-ins above):
 
 cloud-init's usual auto-resize doesn't work here: its `growpart`/`resizefs` modules can't map the `/` mountpoint
 back to a block device through the composefs overlay bootc/ostree uses, so they're disabled rather than left to
-fail noisily every boot. The root partition is sized once at image-build time via
-[`disk_config/disk.toml`](disk_config/disk.toml)'s `minsize`. If you later enlarge the underlying disk (e.g.
-`qm resize 9000 scsi0 +50G` on Proxmox), grow it manually instead:
+fail noisily every boot (see [`99-bootc-modules.cfg`](system_files/etc/cloud/cloud.cfg.d/99-bootc-modules.cfg)).
+The root partition is sized once at image-build time via [`disk_config/disk.toml`](disk_config/disk.toml)'s
+`minsize`.
 
-```bash
-sudo growpart /dev/sda 4   # partition 4 is "root" - check with `lsblk` / `sudo sfdisk -l /dev/sda`
-sudo xfs_growfs /
-```
+Instead, a `growroot.service` systemd oneshot ships in the image
+([`system_files/usr/libexec/growroot`](system_files/usr/libexec/growroot)) and runs on every boot. It resolves the
+real block device via `/sysroot` (the actual ostree deployment mount, unlike the composefs overlay at `/`), then
+runs `growpart`/`xfs_growfs` against it. It's a no-op once the partition/filesystem already fill the disk, so
+nothing extra is needed after enlarging the underlying disk (e.g. `qm resize 9000 scsi0 +50G` on Proxmox) beyond
+rebooting the VM.
 
 ## Step 1: Push this to your own GitHub repo
 

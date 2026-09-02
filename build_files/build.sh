@@ -56,6 +56,14 @@ systemctl enable cloud-init-main.service
 systemctl enable cloud-config.service
 systemctl enable cloud-final.service
 
+### growroot
+# system_files/usr/libexec/growroot + .../growroot.service were just copied in
+# above. Replaces cloud-init's own growpart/resizefs modules, which are
+# disabled here because they can't resolve "/" through the composefs overlay
+# (see 99-bootc-modules.cfg and README "Growing the root filesystem").
+chmod 0755 /usr/libexec/growroot
+systemctl enable growroot.service
+
 ### passwordless sudo for wheel
 # system_files/etc/sudoers.d/wheel-nopasswd was just copied in above.
 # Git doesn't preserve exact permission bits, and sudo refuses group/world

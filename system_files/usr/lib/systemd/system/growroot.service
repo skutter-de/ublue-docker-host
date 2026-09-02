@@ -1,0 +1,10 @@
+[Unit]
+Description=Grow root partition and filesystem to fill the underlying disk
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/growroot
+
+[Install]
+WantedBy=multi-user.target

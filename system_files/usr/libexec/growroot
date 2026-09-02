@@ -1,0 +1,23 @@
+#!/bin/bash
+# Grows the root partition and filesystem to fill the underlying disk after
+# it's been enlarged post-deploy (e.g. `qm resize <vmid> scsi0 128G` on
+# Proxmox). cloud-init's own growpart/resizefs modules can't do this here -
+# they resolve "/" to the composefs pseudo-device ("Device '/dev/composefs'
+# did not exist"), see 99-bootc-modules.cfg - so this ships as a plain
+# systemd oneshot instead, resolving the real block device via /sysroot
+# (the actual ostree deployment mount) rather than the composefs overlay at
+# "/". Safe to run on every boot: growpart/xfs_growfs are no-ops once the
+# partition/filesystem already fill the disk.
+set -euo pipefail
+
+root_dev=$(findmnt -no SOURCE /sysroot)
+disk="/dev/$(lsblk -no PKNAME "$root_dev")"
+partnum=$(udevadm info --query=property "$root_dev" | sed -n 's/^ID_PART_ENTRY_NUMBER=//p')
+
+if [ -z "$partnum" ]; then
+    echo "growroot: could not determine partition number for $root_dev, skipping" >&2
+    exit 0
+fi
+
+growpart "$disk" "$partnum" || true
+xfs_growfs /
