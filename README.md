@@ -147,6 +147,29 @@ sudo bootc switch ghcr.io/<youruser>/ublue-docker-host:latest
 sudo reboot
 ```
 
+## ZFS
+
+ZFS 2.4.4 is fully installed: `kmod-zfs` (kernel module), `zpool`/`zfs` CLI, `python3-pyzfs`, and `zfs-dracut`
+(initramfs hook for root-on-ZFS). All ZFS systemd services (`zfs-import-cache`, `zfs-mount`, `zfs-zed`, …) are
+enabled and will auto-import/mount pools once configured. Until a pool exists they exit silently.
+
+### Multi-disk redundancy and bootability
+
+For a **ZFS mirror** (RAID-1 equivalent) with boot redundancy — where the system remains bootable if one disk fails
+— each disk needs its own EFI System Partition (ESP) and bootloader installation. On Proxmox this is handled by
+[`proxmox-boot-tool`](https://pve.proxmox.com/wiki/Host_Bootloader#proxmox-boot-tool), but that tool is
+Debian/Proxmox-specific and not available as an RPM.
+
+On this Fedora/uCore image the equivalent is manual:
+
+1. After adding a mirror disk, copy the partition layout: `sfdisk -d /dev/sda | sfdisk /dev/sdb`
+2. Install the bootloader onto the new disk's ESP: `grub2-install --target=x86_64-efi --efi-directory=/boot/efi --boot-directory=/boot --removable /dev/sdb`
+3. To keep ESPs in sync after OS updates, a systemd service that runs `rsync /boot/efi/ /boot/efi-mirror/` after
+   `bootloader-update.service` is a reasonable approach (not yet included in this image).
+
+**RAIDZ (RAID-5/6 equivalent):** RAIDZ cannot be used for the boot partition — ZFS RAIDZ has no redundant
+`/boot`/ESP by design. The recommended layout is a separate ZFS mirror for `/boot` and RAIDZ only for data.
+
 ## Notes
 
 - uCore explicitly recommends not running podman and docker containers on the same host at the same time; podman
