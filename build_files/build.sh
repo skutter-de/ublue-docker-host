@@ -24,7 +24,13 @@ dnf5 install -y \
     wget1-wget \
     python3.12 \
     chezmoi \
-    git
+    git \
+    helix \
+    helix-parsers \
+    helix-themes \
+    lsd \
+    btop \
+    bat
 
 # python3.12 has no python3.12-pip package; ensurepip provides it, but it installs into
 # /usr/local (-> /var/usrlocal on this ostree/bootc layout), which only gets created by
