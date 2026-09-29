@@ -1,0 +1,15 @@
+[Unit]
+Description=Stage rebase from localhost to GHCR on first boot
+# Only runs once: on the very first boot after a fresh qcow2 deployment.
+# Subsequent boots (including after the staged rebase takes effect) skip this.
+ConditionFirstBoot=yes
+After=network-online.target ostree-remount.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/libexec/ublue-rebase-ghcr
+
+[Install]
+WantedBy=multi-user.target

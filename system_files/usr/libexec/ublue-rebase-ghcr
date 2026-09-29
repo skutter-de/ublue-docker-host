@@ -1,0 +1,17 @@
+#!/bin/bash
+# Runs once on first boot (ConditionFirstBoot=yes) to stage a rebase from the
+# localhost/ reference baked in by bootc-image-builder to the canonical GHCR
+# remote. After the next reboot the system pulls future updates from GHCR via
+# rpm-ostreed-automatic.timer.
+set -euo pipefail
+
+REMOTE=$(rpm-ostree status --json | python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+ref = data.get('deployments', [{}])[0].get('container-image-reference', '')
+print(ref)
+")
+
+if [[ "$REMOTE" == *"localhost/"* ]]; then
+    rpm-ostree rebase ostree-image-signed:docker://ghcr.io/skutter-de/ublue-docker-host:latest
+fi

@@ -79,6 +79,17 @@ visudo -cf /etc/sudoers.d/wheel-nopasswd
 # Drop it; everything else about CoreOS's hybrid BIOS+UEFI layout is untouched.
 sed -i '/mkfs_options:/,+1d' /usr/lib/image-builder/bootc/disk.yaml
 
+### Updates
+# Zincati (CoreOS auto-updater) requires ignition.platform.id on the kernel
+# cmdline, absent on qcow2-provisioned VMs. Disable it here; 50-ublue-docker-host
+# .preset enforces the disable on every deployment so it can't be re-enabled by
+# an upstream preset change.
+# rpm-ostreed-automatic.timer replaces it: stages new OCI image versions from
+# GHCR in the background, same as Bazzite's uupd mechanism.
+# ublue-rebase-ghcr runs once on first boot to switch the remote from the
+# localhost/ reference baked in by bootc-image-builder to ghcr.io.
+chmod 0755 /usr/libexec/ublue-rebase-ghcr
+
 ### cleanup
 # /run is tmpfs at actual boot; anything package scriptlets left here during
 # the build is stale and shouldn't ship in the image. (Don't blanket-wipe

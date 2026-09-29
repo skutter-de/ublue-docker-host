@@ -1,0 +1,18 @@
+# These rules must be listed here because uCore/Fedora's 99-default-disable.preset
+# ends with a catch-all "disable *" that wins over a plain systemctl enable done at
+# build time (ostree re-applies presets on first boot / every deployment).
+# Sorted before 99- so these rules match first.
+
+# Zincati is the CoreOS Cincinnati-protocol auto-updater. It requires
+# ignition.platform.id on the kernel cmdline, which is absent on qcow2-provisioned
+# VMs (deployed without Ignition). Updates are handled by rpm-ostreed-automatic.timer.
+disable zincati.service
+
+# Stage new OCI image versions automatically in the background (mirrors Bazzite's
+# uupd behaviour). Takes effect on the next reboot.
+enable rpm-ostreed-automatic.timer
+
+# On the very first boot after a fresh qcow2 deploy, stage a rebase from the
+# localhost/ reference baked in by bootc-image-builder to the canonical GHCR
+# remote so rpm-ostreed-automatic.timer has a real upstream to pull from.
+enable ublue-rebase-ghcr.service
