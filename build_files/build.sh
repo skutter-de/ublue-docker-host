@@ -22,7 +22,9 @@ dnf5 install -y \
     cifs-utils \
     nfs-utils \
     wget1-wget \
-    python3.12
+    python3.12 \
+    chezmoi \
+    git
 
 # python3.12 has no python3.12-pip package; ensurepip provides it, but it installs into
 # /usr/local (-> /var/usrlocal on this ostree/bootc layout), which only gets created by
@@ -85,6 +87,10 @@ sed -i '/mkfs_options:/,+1d' /usr/lib/image-builder/bootc/disk.yaml
 # text — useful on a desktop, just journal spam on a headless server. Its
 # python3-six dependency is also missing in the base image, producing a second
 # error on every single AVC denial.
+# mkdir first: RPM scriptlets try to remove /var/lib/setroubleshoot and
+# /run/setroubleshoot at uninstall time; those dirs don't exist in the build
+# container, causing scriptlet failures that abort the build under set -e.
+mkdir -p /var/lib/setroubleshoot /run/setroubleshoot
 dnf5 remove -y setroubleshoot-server setroubleshoot-plugins
 
 # coreos-sshd-generator runs `sshd -G` during early boot to generate an
@@ -92,6 +98,7 @@ dnf5 remove -y setroubleshoot-server setroubleshoot-plugins
 # paths. SELinux blocks sshd execution in the generator context, producing
 # repeated AVC denials. cloud-init handles SSH key injection here, so the
 # generator serves no purpose.
+mkdir -p /etc/systemd/system-generators
 ln -sf /dev/null /etc/systemd/system-generators/coreos-sshd-generator
 
 ### Updates
