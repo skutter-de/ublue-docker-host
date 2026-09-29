@@ -47,3 +47,7 @@ disable udisks2.service
 
 # fwupd-refresh: firmware update checks — VMs don't have updatable firmware.
 disable fwupd-refresh.timer
+
+# irqbalance: optimizes IRQ distribution across CPUs. In a VM the hypervisor
+# controls interrupt routing; irqbalance only produces Permission denied noise.
+disable irqbalance.service
