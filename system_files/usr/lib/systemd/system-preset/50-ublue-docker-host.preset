@@ -39,15 +39,6 @@ disable iscsi-starter.service
 disable iscsid.socket
 disable iscsiuio.socket
 
-# ZFS: managed by Proxmox on the host; not needed inside the guest VM.
-disable zfs-import-cache.service
-disable zfs-mount.service
-disable zfs-share.service
-disable zfs-volume-wait.service
-disable zfs-zed.service
-disable zfs-import.target
-disable zfs.target
-
 # mdmonitor: software RAID monitoring — irrelevant in a VM with a single virtual disk.
 disable mdmonitor.service
 
