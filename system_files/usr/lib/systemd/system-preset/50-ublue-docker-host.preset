@@ -16,3 +16,19 @@ enable rpm-ostreed-automatic.timer
 # localhost/ reference baked in by bootc-image-builder to the canonical GHCR
 # remote so rpm-ostreed-automatic.timer has a real upstream to pull from.
 enable ublue-rebase-ghcr.service
+
+# Afterburn handles platform-specific first-boot tasks (hostname, SSH keys) for
+# CoreOS cloud deployments. Cloud-init covers all of that for our Proxmox VMs,
+# so Afterburn is redundant and would race with cloud-init over the same settings.
+disable afterburn-checkin.service
+disable afterburn-firstboot-checkin.service
+disable afterburn-sshkeys.target
+
+# Ignition services: Ignition is not used on qcow2-provisioned VMs (we use
+# cloud-init). These services all exit harmlessly with no config present, but
+# disabling them keeps the boot log clean.
+disable coreos-check-ssh-keys.service
+disable coreos-ignition-delete-config.service
+disable coreos-ignition-firstboot-complete.service
+disable coreos-ignition-write-issues.service
+disable ignition-delete-config.service

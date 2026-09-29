@@ -5,12 +5,7 @@
 # rpm-ostreed-automatic.timer.
 set -euo pipefail
 
-REMOTE=$(rpm-ostree status --json | python3 -c "
-import json, sys
-data = json.load(sys.stdin)
-ref = data.get('deployments', [{}])[0].get('container-image-reference', '')
-print(ref)
-")
+REMOTE=$(rpm-ostree status --json | jq -r '.deployments[0]["container-image-reference"] // ""')
 
 if [[ "$REMOTE" == *"localhost/"* ]]; then
     rpm-ostree rebase ostree-image-signed:docker://ghcr.io/skutter-de/ublue-docker-host:latest
