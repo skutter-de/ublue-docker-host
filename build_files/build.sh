@@ -79,6 +79,21 @@ visudo -cf /etc/sudoers.d/wheel-nopasswd
 # Drop it; everything else about CoreOS's hybrid BIOS+UEFI layout is untouched.
 sed -i '/mkfs_options:/,+1d' /usr/lib/image-builder/bootc/disk.yaml
 
+### Remove desktop/Ignition tooling not needed on a headless Proxmox VM
+
+# setroubleshoot-server is a GUI tool that explains SELinux denials in plain
+# text — useful on a desktop, just journal spam on a headless server. Its
+# python3-six dependency is also missing in the base image, producing a second
+# error on every single AVC denial.
+dnf5 remove -y setroubleshoot-server setroubleshoot-plugins
+
+# coreos-sshd-generator runs `sshd -G` during early boot to generate an
+# AuthorizedKeysFile drop-in that includes Ignition/Afterburn ephemeral key
+# paths. SELinux blocks sshd execution in the generator context, producing
+# repeated AVC denials. cloud-init handles SSH key injection here, so the
+# generator serves no purpose.
+ln -sf /dev/null /etc/systemd/system-generators/coreos-sshd-generator
+
 ### Updates
 # Zincati (CoreOS auto-updater) requires ignition.platform.id on the kernel
 # cmdline, absent on qcow2-provisioned VMs. Disable it here; 50-ublue-docker-host
