@@ -32,3 +32,27 @@ disable coreos-ignition-delete-config.service
 disable coreos-ignition-firstboot-complete.service
 disable coreos-ignition-write-issues.service
 disable ignition-delete-config.service
+
+# iSCSI: not used on this Docker host VM.
+disable iscsi-onboot.service
+disable iscsi-starter.service
+disable iscsid.socket
+disable iscsiuio.socket
+
+# ZFS: managed by Proxmox on the host; not needed inside the guest VM.
+disable zfs-import-cache.service
+disable zfs-mount.service
+disable zfs-share.service
+disable zfs-volume-wait.service
+disable zfs-zed.service
+disable zfs-import.target
+disable zfs.target
+
+# mdmonitor: software RAID monitoring — irrelevant in a VM with a single virtual disk.
+disable mdmonitor.service
+
+# udisks2: desktop-oriented disk management daemon — not needed on a headless server.
+disable udisks2.service
+
+# fwupd-refresh: firmware update checks — VMs don't have updatable firmware.
+disable fwupd-refresh.timer
